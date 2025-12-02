@@ -282,3 +282,111 @@ npx cssnano styles.css styles.min.css
   - ✅ 在本地檔案環境顯示手動複製視窗
   - ✅ 所有瀏覽器都能正常運作
 
+==========
+12/1 RWD內容
+問題根源：
+
+  .scene 原本設定了：
+  - overflow: hidden - 阻止滾動
+  - position: fixed + height: 100vh - 固定高度，內容超出時無法顯示
+
+  修正方案：
+
+  1. 在 @media (max-width: 768px)：
+
+  /* 允許垂直滾動 */
+  .scene {
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch; /* iOS 平滑滾動 */
+  }
+
+  /* 調整首頁對齊方式 */
+  #intro-scene {
+      align-items: flex-start;
+      padding-top: 10vh;
+  }
+
+  /* 調整結果頁對齊方式 */
+  #result-scene {
+      align-items: flex-start;
+      padding: 2rem 0;
+  }
+
+  2. 在 @media (max-width: 480px)：
+
+  /* 確保滾動 */
+  .scene {
+      overflow-y: auto;
+      overflow-x: hidden;
+  }
+
+  /* 調整內容間距 */
+  #intro-scene {
+      padding: 5vh 1rem;
+  }
+
+  #result-scene {
+      padding: 1.5rem 0;
+  }
+
+  .result-container {
+      padding: 1.5rem 1rem;
+  }
+  
+  深度修正內容 ✓
+
+  1. HTML 優化：
+
+  <!-- 更新 viewport 設定 -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+
+  2. CSS 基礎優化：
+
+  html {
+      -webkit-tap-highlight-color: transparent; /* 移除點擊高亮 */
+  }
+
+  body {
+      position: relative; /* 為 absolute 定位提供參考 */
+  }
+
+  .scene {
+      touch-action: pan-y pinch-zoom; /* 允許垂直滾動和縮放 */
+  }
+
+  3. 手機版核心修正 (@media max-width: 768px & 480px)：
+
+  改變定位方式：
+
+  body {
+      overflow-y: auto; /* body 處理滾動 */
+      height: auto;
+  }
+
+  .scene {
+      position: absolute; /* 從 fixed 改為 absolute */
+      overflow-y: visible; /* 允許內容溢出 */
+      height: auto; /* 高度自適應內容 */
+      min-height: 100vh;
+      -webkit-overflow-scrolling: touch; /* iOS 慣性滾動 */
+      touch-action: pan-y pan-x pinch-zoom; /* 觸控滾動優化 */
+      will-change: transform; /* GPU 加速 */
+  }
+
+  各場景調整：
+
+  - 首頁： 添加上下 padding，避免內容貼邊
+  - 問題頁： 改為垂直排列，高度自適應
+  - 結果頁： 內容居上對齊，允許滾動查看完整內容
+
+  關鍵改進：
+
+  ✅ 定位方式改變 - 從 fixed 改為 absolute，解決滾動鎖定問題
+  ✅ 高度自適應 - 從固定 100vh 改為 auto + min-height
+  ✅ iOS 優化 - 添加 -webkit-overflow-scrolling: touch 慣性滾動
+  ✅ 觸控優化 - 使用 touch-action 控制觸控行為
+  ✅ 效能優化 - 使用 will-change 啟用 GPU 加速
+  ✅ body 滾動 - 讓 body 處理滾動而非場景本身
